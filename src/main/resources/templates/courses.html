@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Browse Courses</title>
+    <style>
+        body { font-family: sans-serif; background-color: #f8f9fa; color: #212529; margin: 0; padding: 2rem; }
+        header { text-align: center; margin-bottom: 2rem; }
+        header h1 { color: #005f73; }
+        .container { max-width: 1000px; margin: auto; }
+        .nav-home { display: block; text-align: center; margin-bottom: 2rem; }
+        .nav-home a { text-decoration: none; background-color: #6c757d; color: white; padding: 0.5rem 1rem; border-radius: 5px; }
+        .nav-home a:hover { background-color: #5a6268; }
+        .course-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem; }
+        .course-card { background: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 0 15px rgba(0,0,0,0.05); }
+        .course-card h3 { margin-top: 0; color: #0a9396; }
+        .course-card p { margin-bottom: 0.5rem; line-height: 1.5; }
+        .course-card .university { font-style: italic; color: #6c757d; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Available MOOCs</h1>
+        </header>
+        <nav class="nav-home"><a href="index.html">Back to Home</a></nav>
+        <div id="course-grid" class="course-grid">
+            </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:8080';
+
+        async function fetchCourses() {
+            try {
+                const response = await fetch(`${API_URL}/courses`);
+                if (!response.ok) throw new Error('Network response was not ok');
+                const courses = await response.json();
+                const grid = document.getElementById('course-grid');
+                grid.innerHTML = '';
+                courses.forEach(course => {
+                    const card = `
+                        <div class="course-card">
+                            <h3>${course.title}</h3>
+                            <p>${course.description}</p>
+                            <p class="university">Offered by: ${course.university ? course.university.name : 'Unknown University'}</p>
+                        </div>
+                    `;
+                    grid.innerHTML += card;
+                });
+            } catch (error) {
+                console.error('Failed to fetch courses:', error);
+                document.getElementById('course-grid').innerHTML = '<p>Error loading courses. Please try again later.</p>';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', fetchCourses);
+    </script>
+</body>
+</html>

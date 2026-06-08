@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard</title>
+    <style>
+        body { font-family: sans-serif; background-color: #f8f9fa; color: #212529; margin: 0; padding: 2rem; }
+        header { text-align: center; margin-bottom: 2rem; }
+        header h1 { color: #005f73; }
+        .container { max-width: 800px; margin: auto; display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
+        .nav-home { grid-column: 1 / -1; text-align: center; margin-bottom: 1rem; }
+        .nav-home a { text-decoration: none; background-color: #6c757d; color: white; padding: 0.5rem 1rem; border-radius: 5px; }
+        .nav-home a:hover { background-color: #5a6268; }
+        .panel { background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 0 15px rgba(0,0,0,0.05); }
+        .panel h2 { margin-top: 0; color: #0a9396; }
+        form { display: flex; flex-direction: column; gap: 0.8rem; }
+        input { padding: 0.7rem; border: 1px solid #ced4da; border-radius: 5px; font-size: 1rem; }
+        button { padding: 0.8rem; border: none; border-radius: 5px; background-color: #0a9396; color: white; font-size: 1rem; cursor: pointer; }
+        button:hover { background-color: #007782; }
+        .result { margin-top: 1rem; padding: 1rem; border: 1px solid #dee2e6; border-radius: 5px; background: #e9ecef; }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Admin Dashboard</h1>
+    </header>
+    <div class="container">
+        <div class="nav-home"><a href="index.html">Back to Home</a></div>
+        
+        <div class="panel">
+            <h2>Credit Transfer Simulator</h2>
+            <form id="credit-form">
+                <input type="number" id="source-course" placeholder="Source Course ID" required>
+                <input type="number" id="dest-course" placeholder="Destination Course ID" required>
+                <button type="submit">Validate Transfer</button>
+            </form>
+            <div id="credit-result" class="result">Result will appear here.</div>
+        </div>
+
+        <div class="panel">
+            <h2>BGP Routing Simulator</h2>
+            <form id="routing-form">
+                <input type="number" id="source-as" placeholder="Source AS Number" required>
+                <input type="number" id="dest-as" placeholder="Destination AS Number" required>
+                <button type="submit">Find Best Path</button>
+            </form>
+            <div id="routing-result" class="result">Result will appear here.</div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:8080';
+
+        async function validateCredit(event) {
+            event.preventDefault();
+            const sourceId = document.getElementById('source-course').value;
+            const destId = document.getElementById('dest-course').value;
+            const resultDiv = document.getElementById('credit-result');
+            
+            try {
+                const response = await fetch(`${API_URL}/credits/validate/${sourceId}/${destId}`);
+                if (!response.ok) throw new Error('Network error');
+                const result = await response.json();
+                resultDiv.textContent = `Validation Result: ${result.isValid ? 'Approved' : 'Rejected'}`;
+            } catch (error) {
+                resultDiv.textContent = 'Error: Could not perform validation.';
+            }
+        }
+
+        async function findRoute(event) {
+            event.preventDefault();
+            const sourceAs = document.getElementById('source-as').value;
+            const destAs = document.getElementById('dest-as').value;
+            const resultDiv = document.getElementById('routing-result');
+
+            try {
+                const response = await fetch(`${API_URL}/credits/routing/path/${sourceAs}/${destAs}`);
+                if (!response.ok) throw new Error('Network error');
+                const result = await response.json();
+                resultDiv.textContent = `Best Path: ${result.bestPath.join(' -> ')}`;
+            } catch (error) {
+                resultDiv.textContent = 'Error: Could not find path.';
+            }
+        }
+
+        document.getElementById('credit-form').addEventListener('submit', validateCredit);
+        document.getElementById('routing-form').addEventListener('submit', findRoute);
+    </script>
+</body>
+</html>

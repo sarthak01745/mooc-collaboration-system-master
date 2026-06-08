@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Management</title>
+    <style>
+        body { font-family: sans-serif; background-color: #f8f9fa; color: #212529; margin: 0; padding: 2rem; }
+        header { text-align: center; margin-bottom: 2rem; }
+        header h1 { color: #005f73; }
+        .container { max-width: 900px; margin: auto; background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 0 15px rgba(0,0,0,0.05); }
+        .nav-home { display: block; text-align: center; margin-bottom: 2rem; }
+        .nav-home a { text-decoration: none; background-color: #6c757d; color: white; padding: 0.5rem 1rem; border-radius: 5px; }
+        .nav-home a:hover { background-color: #5a6268; }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 2rem; }
+        th, td { padding: 0.8rem; text-align: left; border-bottom: 1px solid #dee2e6; }
+        th { background-color: #e9ecef; }
+        form { display: flex; flex-direction: column; gap: 0.8rem; }
+        input { padding: 0.7rem; border: 1px solid #ced4da; border-radius: 5px; font-size: 1rem; }
+        button { padding: 0.8rem; border: none; border-radius: 5px; background-color: #0a9396; color: white; font-size: 1rem; cursor: pointer; }
+        button:hover { background-color: #007782; }
+        #message { text-align: center; padding: 1rem; margin-top: 1rem; border-radius: 5px; display: none; }
+        .success { background-color: #d4edda; color: #155724; }
+        .error { background-color: #f8d7da; color: #721c24; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Student Management</h1>
+        </header>
+        <nav class="nav-home"><a href="index.html">Back to Home</a></nav>
+        
+        <h2>All Students</h2>
+        <table id="students-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>University ID</th>
+                </tr>
+            </thead>
+            <tbody>
+                </tbody>
+        </table>
+
+        <h2>Add New Student</h2>
+        <form id="add-student-form">
+            <input type="text" id="name" placeholder="Student Name" required>
+            <input type="email" id="email" placeholder="Student Email" required>
+            <input type="number" id="universityId" placeholder="University ID" required>
+            <button type="submit">Add Student</button>
+        </form>
+        <div id="message"></div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:8080';
+
+        async function fetchStudents() {
+            try {
+                const response = await fetch(`${API_URL}/students`);
+                if (!response.ok) throw new Error('Network response was not ok');
+                const students = await response.json();
+                const tableBody = document.querySelector('#students-table tbody');
+                tableBody.innerHTML = ''; // Clear existing rows
+                students.forEach(student => {
+                    const row = `<tr>
+                        <td>${student.id}</td>
+                        <td>${student.name}</td>
+                        <td>${student.email}</td>
+                        <td>${student.university ? student.university.id : 'N/A'}</td>
+                    </tr>`;
+                    tableBody.innerHTML += row;
+                });
+            } catch (error) {
+                console.error('Failed to fetch students:', error);
+                displayMessage('Failed to load students.', 'error');
+            }
+        }
+
+        async function addStudent(event) {
+            event.preventDefault();
+            const name = document.getElementById('name').value;
+            const email = document.getElementById('email').value;
+            const universityId = document.getElementById('universityId').value;
+            
+            const studentData = {
+                name: name,
+                email: email,
+                university: { id: parseInt(universityId) }
+            };
+
+            try {
+                const response = await fetch(`${API_URL}/students`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(studentData)
+                });
+                if (!response.ok) throw new Error('Failed to create student');
+                
+                displayMessage('Student added successfully!', 'success');
+                document.getElementById('add-student-form').reset();
+                fetchStudents(); // Refresh the table
+            } catch (error) {
+                console.error('Failed to add student:', error);
+                displayMessage('Error adding student.', 'error');
+            }
+        }
+
+        function displayMessage(text, type) {
+            const messageDiv = document.getElementById('message');
+            messageDiv.textContent = text;
+            messageDiv.className = type; // 'success' or 'error'
+            messageDiv.style.display = 'block';
+            setTimeout(() => { messageDiv.style.display = 'none'; }, 3000);
+        }
+
+        document.addEventListener('DOMContentLoaded', fetchStudents);
+        document.getElementById('add-student-form').addEventListener('submit', addStudent);
+    </script>
+</body>
+</html>
