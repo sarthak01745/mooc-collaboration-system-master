@@ -1,5 +1,5 @@
 package com.mooc;
 
-public class moocapplicationtests {
+public class MoocApplicationTests {
     
 }
